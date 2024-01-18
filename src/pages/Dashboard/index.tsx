@@ -8,20 +8,30 @@ import { Details } from '../../components/Details';
 import { Loading } from '../../components/Loading';
 import { NextDays } from '../../components/NextDays';
 import { CityProps } from '../../services/getCityByNameService';
+import { useNavigate } from 'react-router-dom';
 
 export function Dashboard() {
   const [data, setData] = useState<GetWeatherByCityResponseProps>({} as GetWeatherByCityResponseProps);
   const [isLoading, setIsLoading] = useState(true);
-  const [city, setCity] = useState<CityProps>(JSON.parse(localStorage.getItem('@typewheather:city') ?? ''));
+  const storedCity = localStorage.getItem('@typewheather:city');
+  const [city, setCity] = useState<CityProps>(storedCity ? JSON.parse(storedCity) : null);
+  const navigate = useNavigate()
 
   useEffect(() => {
-    setIsLoading(true);
+    if (city) {
+      setIsLoading(true);
 
-    const { latitude, longitude } = city;
+      const { latitude, longitude } = city;
 
-    getWeatherByCity({ latitude, longitude })
-      .then((response) => setData(response))
-      .finally(() => setIsLoading(false));
+      getWeatherByCity({ latitude, longitude })
+        .then((response) => setData(response))
+        .finally(() => setIsLoading(false));
+    } else {
+      setTimeout(() => {
+        setIsLoading(false);
+        navigate('/')
+      }, 1000)
+    }
   }, [city]);
 
   if (isLoading) {
